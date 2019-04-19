@@ -9,23 +9,24 @@ var ListingSchema = new Schema({
   // `title` is required and of type String
   image: {
       type: String,
-      required: true
+      required: false
   },
   title: {
     type: String,
-    required: true
+    required: false
   },
   location: {
     type: String,
-    required: true
+    required: false
   },
   price: {
-      type: Number,
-      required: true,
+      type: String,
+      required: false
   },
   bedrooms: {
-      type: Number,
-      required: true
+      type: String,
+      required: false,
+      default: "None listed."
   },
   // `link` is required and of type String
   link: {
