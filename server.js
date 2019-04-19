@@ -21,6 +21,7 @@ const exphbs = require("express-handlebars");
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
+
 // Use morgan logger for logging requests
 app.use(logger("dev"));
 
