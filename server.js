@@ -1,110 +1,117 @@
-const express = require("express");
-const logger = require("morgan");
-const mongoose = require("mongoose");
 
-// Our scraping tools
+// ========================  
+//   == Req. Packages ==
+// ========================
 
-const axios = require("axios");
-const cheerio = require("cheerio");
+    const express = require("express");
+    const logger = require("morgan");
+    const mongoose = require("mongoose");
 
-// Require all models
-const db = require("./models");
+    // Our scraping tools
 
-const PORT = process.env.PORT || 8080;
+    const axios = require("axios");
+    const cheerio = require("cheerio");
 
-// Initialize Express
-const app = express();
+    // Require all models
+    const db = require("./models");
 
-// Require and set Handlebars engine
-const exphbs = require("express-handlebars");
+    const PORT = process.env.PORT || 8080;
 
-app.engine("handlebars", exphbs({ defaultLayout: "main" }));
-app.set("view engine", "handlebars");
+    // Initialize Express
+    const app = express();
 
-// Use morgan logger for logging requests
-app.use(logger("dev"));
+    // Require and set Handlebars engine
+    const exphbs = require("express-handlebars");
 
-// Parse request body as JSON
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+    app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+    app.set("view engine", "handlebars");
 
-// Make public a static folder
-app.use(express.static("public"));
+    // Use morgan logger for logging requests
+    app.use(logger("dev"));
 
-// Connect to the Mongo DB
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+    // Parse request body as JSON
+    app.use(express.urlencoded({ extended: true }));
+    app.use(express.json());
 
-mongoose.connect(MONGODB_URI,  { useNewUrlParser: true });
+    // Make public a static folder
+    app.use(express.static("public"));
 
-let price = 0;
-let minBeds = 0;
-let maxBeds = 0;
+    // Connect to the Mongo DB
+    var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/craigslistDB";
 
-// const sanFranUrl = "https://sfbay.craigslist.org/search/apa?search_distance=10&postal=94105&max_price=" + price || 3500 + "&min_bedrooms=" + minBeds || 2 + "&max_bedrooms=" + maxBeds || 2 + "&availabilityMode=0&sale_date=all+dates";
-// const newYorkUrl = "https://newyork.craigslist.org/search/aap?search_distance=4&postal=10012%2C&max_price=" + price || 3500 + "&min_bedrooms=" + minBeds || 2 + "&max_bedrooms=" + maxBeds || 2 + "&availabilityMode=0&sale_date=all+dates";
-const newYorkUrl = "https://newyork.craigslist.org/search/aap?search_distance=4&postal=10012%2C&max_price=3500&min_bedrooms2=&max_bedrooms=2&availabilityMode=0&sale_date=all+dates";
+    mongoose.connect(MONGODB_URI,  { useNewUrlParser: true });
 
 
-// Routes
+// ========================  
+//  == Helper Variables ==
+// ========================
 
-// Render home page on load
-app.get("/", (req, res) => res.render("index"));
+
+    // let price = 0;
+    // let minBeds = 0;
+    // let maxBeds = 0;
+
+    // const sanFranUrl = "https://sfbay.craigslist.org/search/apa?search_distance=10&postal=94105&max_price=" + price || 3500 + "&min_bedrooms=" + minBeds || 2 + "&max_bedrooms=" + maxBeds || 2 + "&availabilityMode=0&sale_date=all+dates";
+    const newYorkUrl = "https://newyork.craigslist.org/search/mnh/aap?max_price=4000&min_bedrooms=2&max_bedrooms=2&availabilityMode=0&sale_date=all+dates";
 
 
-// A GET route for scraping the craigslist results
 
-app.get("/scrape", function(req, res) {
-    
-    // First, we grab the correct url to query:
-//   let url = req.params.url === "sanfran" ? sanFranUrl : newYorkUrl;
-  
-    // First, we grab the body of the html with axios
-  axios.get(newYorkUrl).then(function(response) {
-    // Then, we load that into cheerio and save it to $ for a shorthand selector
-    var $ = cheerio.load(response.data);
+// ========================  
+//   ===== Routes =====
+// ========================
 
-    $("li.result-row").each(function (i, element) {
 
-    var price = $(element).find("span.result-price").text();
-    var priceFixed = price.slice(price.length / 2);
+    // Render home page on load
 
-    var result = {
-        image: $(element).find("div.swipe").find("img").attr("src"),
-        title: $(element).find("a.result-title").text().trim(),
-        link: $(element).find("a.result-image").attr("href").trim(),
-        price: priceFixed,
-        location: $(element).find("span.result-hood").text().trim(),
-        bedrooms: $(element).find("span.housing").text().trim(), 
-    };
+    app.get("/", (req, res) => res.render("index"));
 
-    console.log(result);
+    // A GET route for scraping the craigslist results:
 
-      db.Listing.create(result)
-        .then(function(dbListing) {
-          // View the added result in the console
-          
-        //   console.log(dbListing);
+    app.get('/scrape', (req, res) => {
+        
+        axios.get(newYorkUrl).then(function(response) {
 
-        })
-        .catch(function(err) {
-          // If an error occurred, log it
-          console.log(err);
+            const $ = cheerio.load(response.data);
+            const promises = $('li.result-row')
+
+                .get() // as in jQuery, .get() unwraps Cheerio and returns Array
+                .map(function(element) { // this is Array.prototype.map()
+
+                var price = $(element).find("span.result-price").text();
+                var priceFixed = price.slice(price.length / 2);
+                var bedrooms = $(element).find("span.housing").text().trim() === '' ? $(element).find("span.housing").text().trim() : 'None Listed';
+                var location = $(element).find("span.result-hood").text().trim() === '' ? $(element).find("span.result-hood").text().trim() : 'Not Specified'
+            
+                return db.Listing.create({
+                    image: $(element).find("img"),
+                    title: $(element).find("a.result-title").text().trim(),
+                    link: $(element).find("a.result-image").attr("href").trim(),
+                    price: priceFixed,
+                    location: $(element).find("span.result-hood").text().trim(),
+                    bedrooms: $(element).find("span.housing").text().trim()
+                })
+
+                .catch(err => { // catch so any one failure doesn't scupper the whole scrape.
+                    return {}; // on failure of Listing.create(), inject some kind of default object (or string or whatever).
+                });
+            });
+            
+            // At this point, we have an array of promises, which need to be aggregated with Promise.all().
+            Promise.all(promises)
+            
+            .then(results => { // Promise.all() should accept whatever promises are returned by Listing.create().
+            
+                console.log(results);
+                res.json(results);
+
+            });
         });
+    });
 
-    // }).then(function() {
-    //     db.Listing.find({})
+// ========================  
+//   === Start Server ===
+// ========================
 
-    //       .then(function(found) {
-    //           res.json(found);
-    //       })
-    //       .catch(function(error) {
-    //         // If an erroror occurred, log it
-    //         console.log(error);
-    //       });
-    })
-  });
-});
-
-app.listen(PORT, function() {
-    console.log("App running on port " + PORT + "!");
-  });
+    app.listen(PORT, function() {
+        console.log("App running on port " + PORT + "!");
+    });

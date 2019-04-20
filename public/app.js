@@ -3,12 +3,57 @@
 // Grab the listings as JSON
 $.getJSON("/scrape", function(data) {
     // For each one:
-    for (var i = 0; i < data.length; i++) {
-      // Display the apropos information on the page
-      $("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
-    
-    console.log(`Title: ${data[i].title} | Price: ${data[i].price} | Beds: ${data[i].bedrooms} | Location: ${data[i].location}`)
 
+    var carousel = $("#carousel-body");
+
+    for (var i = 0; i < Math.min(data.length, 5); i++) {
+      // Display the apropos information on the page
+      // $("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
+        
+        console.log(`Title: ${data[i].title}
+        | Price: ${data[i].price}
+        | Beds: ${data[i].bedrooms}
+        | Location: ${data[i].location}`)
+
+        if (i == 0) {
+            carousel.append(
+                '<div class="carousel-item active">' +
+                    '<img src="assets/images/nyc-apt' + Math.floor(Math.random() * 11) + '.jpg" class="d-block w-100" alt="stock-image">' +
+                    '<div class="carousel-caption d-none d-md-block">' +
+                        '<h5>' + data[i].location + '</h5>' +
+                        '<p>' + data[i].title + '</p>' +
+                    '</div>' +
+                '</div>'
+            )
+        }
+        else {
+            carousel.append(
+                '<div class="carousel-item">' +
+                    '<img src="assets/images/nyc-apt1.jpg" class="d-block w-100" alt="stock-image">' +
+                    '<div class="carousel-caption d-none d-md-block">' +
+                        '<h5>' + data[i].location + '</h5>' +
+                        '<p>' + data[i].title + '</p>' +
+                    '</div>' +
+                '</div>'
+            )
+        }
+        
+
+
+    }
+
+    var cardGroup = $("#cards-group");
+
+    for (var i = 0; i < Math.min(data.length, 21); i++) {
+        cardGroup.append(
+            '<div class="card">' +
+                '<img src="assets/images/nyc-apt' + Math.floor(Math.random() * 11) + '.jpg" class="card-img-top" alt="...">' +
+                '<div class="card-body">' +
+                    '<h5>' + data[i].location + '</h5>' +
+                    '<p>' + data[i].title + '</p>' +
+                '</div>' +
+        '</div>'
+        )
     }
   });
   

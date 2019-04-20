@@ -1,3 +1,69 @@
+body {
+    background-image: url('/assets/images/nyc-skyline.jpg');
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-color: rgba(226, 67, 67, 0.5);
+    background-blend-mode: multiply;
+    background-size: 100%
+}
+
+#header {
+    text-align: center;
+}
+
+.carousel {
+    display: block;
+    margin: auto;
+    max-width: 60%;
+    height: 400px;
+
+}
+
+.carousel-caption {
+    color: rgb(248, 247, 244);
+    background-color: rgba(61, 61, 61, 0.75);
+}
+
+#carouselExampleCaptions {
+    position: relative;
+    top: 10px;
+}
+
+.hero {
+    
+    color: #fff;
+    text-align: center;
+    text-shadow: 1px 1px 0 rgba(0,0,0,.75);
+
+}
+.hero h1 {
+    font-size: 6em;    
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+#lite {
+    color: gold;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    text-transform: capitalize;
+    font-weight: normal;
+    font-size: 66px;
+    vertical-align: text-top;
+    /* font-style: italic; */
+}
+
+.btn.btn-lg {padding: 10px 40px;}
+.btn.btn-hero,
+.btn.btn-hero:hover,
+.btn.btn-hero:focus {
+    color: #f5f5f5;
+    background-color: #1abc9c;
+    border-color: #1abc9c;
+    outline: none;
+    margin: 20px auto;
+}
+
+
 .card-columns {
     @include media-breakpoint-only(lg) {
       column-count: 4;
